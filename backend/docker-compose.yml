@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:14
+    image: postgres:17
     container_name: red-airlines-postgres
     environment:
       POSTGRES_DB: red_airlines
@@ -17,6 +17,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  graphql-playground:
+    image: renebrandel/graphql-playground
+    container_name: red-airlines-playground
+    environment:
+      ENDPOINT: http://host.docker.internal:8080/query
+    ports:
+      - "4000:4000"
 
 volumes:
   postgres_data:

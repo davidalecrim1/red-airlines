@@ -5,12 +5,12 @@ import (
 	"log"
 	"math"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+
+	"github.com/davidalecrim/red-airlines/internal/database"
 )
 
 var (
@@ -74,10 +74,15 @@ type Booking struct {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-
-	db := connectDB()
-	defer db.Close()
+	db, err := database.ConnectSQLX()
+	if err != nil {
+		log.Fatalf("Connection failed: %v", err)
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("Failed to close database: %v", err)
+		}
+	}()
 
 	log.Println("Generating flights...")
 	flights := generateFlights(1000)
@@ -93,29 +98,11 @@ func main() {
 	log.Println("Seed data completed")
 }
 
-func connectDB() *sqlx.DB {
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		getEnv("DB_HOST", "localhost"),
-		getEnv("DB_PORT", "5432"),
-		getEnv("DB_USER", "postgres"),
-		getEnv("DB_PASSWORD", "postgres"),
-		getEnv("DB_NAME", "red_airlines"),
-	)
-	db, err := sqlx.Open("postgres", connStr)
-	if err != nil {
-		log.Fatalf("Connection failed: %v", err)
-	}
-	if err := db.Ping(); err != nil {
-		log.Fatalf("Ping failed: %v", err)
-	}
-	return db
-}
-
 func generateFlights(count int) []Flight {
 	flights := make([]Flight, 0, count)
 	now := time.Now()
 
-	for i := 0; i < count; i++ {
+	for i := range count {
 		origin := airports[rand.Intn(len(airports))]
 		dest := airports[rand.Intn(len(airports))]
 		for dest == origin {
@@ -151,15 +138,16 @@ func insertFlights(db *sqlx.DB, flights []Flight) {
              :aircraft_type, :total_seats, :available_seats, :status, :created_at, :updated_at)`
 
 	for i := 0; i < len(flights); i += 500 {
-		end := i + 500
-		if end > len(flights) {
-			end = len(flights)
-		}
+		end := min(i+500, len(flights))
 		tx := db.MustBegin()
 		for _, f := range flights[i:end] {
-			tx.NamedExec(query, f)
+			if _, err := tx.NamedExec(query, f); err != nil {
+				log.Printf("Failed to insert flight: %v", err)
+			}
 		}
-		tx.Commit()
+		if err := tx.Commit(); err != nil {
+			log.Printf("Failed to commit flights: %v", err)
+		}
 	}
 	log.Printf("Inserted %d flights", len(flights))
 }
@@ -210,15 +198,16 @@ func insertFares(db *sqlx.DB, fares []Fare) {
              :is_refundable, :is_changeable, :available_seats, :created_at, :updated_at)`
 
 	for i := 0; i < len(fares); i += 500 {
-		end := i + 500
-		if end > len(fares) {
-			end = len(fares)
-		}
+		end := min(i+500, len(fares))
 		tx := db.MustBegin()
 		for _, f := range fares[i:end] {
-			tx.NamedExec(query, f)
+			if _, err := tx.NamedExec(query, f); err != nil {
+				log.Printf("Failed to insert fare: %v", err)
+			}
 		}
-		tx.Commit()
+		if err := tx.Commit(); err != nil {
+			log.Printf("Failed to commit fares: %v", err)
+		}
 	}
 	log.Printf("Inserted %d fares", len(fares))
 }
@@ -236,8 +225,10 @@ func generateAndInsertBookings(db *sqlx.DB, flights []Flight, fares []Fare) {
 		faresByFlight[f.FlightID] = append(faresByFlight[f.FlightID], f)
 	}
 
-	bookingStatuses := []string{"confirmed", "confirmed", "confirmed", "confirmed", "confirmed",
-		"confirmed", "confirmed", "confirmed", "checked_in", "cancelled"}
+	bookingStatuses := []string{
+		"confirmed", "confirmed", "confirmed", "confirmed", "confirmed",
+		"confirmed", "confirmed", "confirmed", "checked_in", "cancelled",
+	}
 	now := time.Now()
 	bookingCount := 0
 
@@ -248,7 +239,7 @@ func generateAndInsertBookings(db *sqlx.DB, flights []Flight, fares []Fare) {
 		}
 
 		tx := db.MustBegin()
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			firstName := firstNames[rand.Intn(len(firstNames))]
 			lastName := lastNames[rand.Intn(len(lastNames))]
 
@@ -269,10 +260,14 @@ func generateAndInsertBookings(db *sqlx.DB, flights []Flight, fares []Fare) {
 				CreatedAt:        now,
 				UpdatedAt:        now,
 			}
-			tx.NamedExec(query, booking)
+			if _, err := tx.NamedExec(query, booking); err != nil {
+				log.Printf("Failed to insert booking: %v", err)
+			}
 			bookingCount++
 		}
-		tx.Commit()
+		if err := tx.Commit(); err != nil {
+			log.Printf("Failed to commit bookings: %v", err)
+		}
 
 		if (flightIdx+1)%100 == 0 {
 			log.Printf("Processed %d flights, %d bookings", flightIdx+1, bookingCount)
@@ -325,11 +320,4 @@ func toLowerCase(s string) string {
 		}
 	}
 	return string(result)
-}
-
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }

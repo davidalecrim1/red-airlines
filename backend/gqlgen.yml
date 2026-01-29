@@ -1,0 +1,25 @@
+schema:
+  - internal/graph/schema.graphqls
+
+exec:
+  filename: internal/graph/generated/generated.go
+  package: generated
+
+model:
+  filename: internal/graph/model/generated/models.go
+  package: generated
+
+resolver:
+  layout: follow-schema
+  dir: internal/graph/resolver
+  package: resolver
+
+models:
+  Flight:
+    model: github.com/davidalecrim/red-airlines/internal/graph/model.Flight
+  Fare:
+    model: github.com/davidalecrim/red-airlines/internal/graph/model.Fare
+  Booking:
+    model: github.com/davidalecrim/red-airlines/internal/graph/model.Booking
+  Time:
+    model: github.com/99designs/gqlgen/graphql.Time

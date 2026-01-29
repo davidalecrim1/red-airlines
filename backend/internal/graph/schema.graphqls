@@ -1,0 +1,52 @@
+type Flight {
+  id: ID!
+  flightNumber: String!
+  origin: String!
+  destination: String!
+  departureTime: Time!
+  arrivalTime: Time!
+  aircraftType: String!
+  totalSeats: Int!
+  availableSeats: Int!
+  status: String!
+  fares: [Fare!]!
+  bookings: [Booking!]!
+}
+
+type Fare {
+  id: ID!
+  flightId: ID!
+  fareClass: String!
+  price: Float!
+  baggageAllowance: Int!
+  isRefundable: Boolean!
+  isChangeable: Boolean!
+  availableSeats: Int!
+  flight: Flight!
+  bookings: [Booking!]!
+}
+
+type Booking {
+  id: ID!
+  bookingReference: String!
+  flightId: ID!
+  fareId: ID!
+  passengerName: String!
+  passengerEmail: String!
+  passengerPhone: String
+  seatNumber: String
+  bookingStatus: String!
+  totalPrice: Float!
+  bookedAt: Time!
+  flight: Flight!
+  fare: Fare!
+}
+
+type Query {
+  flights(origin: String, destination: String, limit: Int): [Flight!]!
+  flight(id: ID!): Flight
+  booking(bookingReference: String!): Booking
+  bookings(passengerEmail: String, limit: Int): [Booking!]!
+}
+
+scalar Time
