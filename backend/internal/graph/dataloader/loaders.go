@@ -10,6 +10,8 @@ import (
 	"github.com/davidalecrim/red-airlines/internal/graph/model"
 )
 
+const batchWindow = 16 * time.Millisecond
+
 type Loaders struct {
 	FlightLoader           *dataloader.Loader[string, *model.Flight]
 	FareLoader             *dataloader.Loader[string, *model.Fare]
@@ -20,11 +22,11 @@ type Loaders struct {
 
 func NewLoaders(db *sqlx.DB) *Loaders {
 	return &Loaders{
-		FlightLoader:           dataloader.NewBatchedLoader(batchFlights(db), dataloader.WithWait[string, *model.Flight](16*time.Millisecond)),
-		FareLoader:             dataloader.NewBatchedLoader(batchFares(db), dataloader.WithWait[string, *model.Fare](16*time.Millisecond)),
-		FaresByFlightLoader:    dataloader.NewBatchedLoader(batchFaresByFlight(db), dataloader.WithWait[string, []*model.Fare](16*time.Millisecond)),
-		BookingsByFlightLoader: dataloader.NewBatchedLoader(batchBookingsByFlight(db), dataloader.WithWait[string, []*model.Booking](16*time.Millisecond)),
-		BookingsByFareLoader:   dataloader.NewBatchedLoader(batchBookingsByFare(db), dataloader.WithWait[string, []*model.Booking](16*time.Millisecond)),
+		FlightLoader:           dataloader.NewBatchedLoader(batchFlights(db), dataloader.WithWait[string, *model.Flight](batchWindow)),
+		FareLoader:             dataloader.NewBatchedLoader(batchFares(db), dataloader.WithWait[string, *model.Fare](batchWindow)),
+		FaresByFlightLoader:    dataloader.NewBatchedLoader(batchFaresByFlight(db), dataloader.WithWait[string, []*model.Fare](batchWindow)),
+		BookingsByFlightLoader: dataloader.NewBatchedLoader(batchBookingsByFlight(db), dataloader.WithWait[string, []*model.Booking](batchWindow)),
+		BookingsByFareLoader:   dataloader.NewBatchedLoader(batchBookingsByFare(db), dataloader.WithWait[string, []*model.Booking](batchWindow)),
 	}
 }
 

@@ -13,6 +13,7 @@
 - Keep the backend minimal and focused
 - Follow gqlgen conventions for GraphQL schema and resolvers
 - Use clear, descriptive function names
+- **IMPORTANT**: Run `make lint` after completing any backend task to ensure code quality
 
 ### Frontend (React/TypeScript)
 - Use TypeScript strict mode

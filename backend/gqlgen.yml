@@ -2,11 +2,11 @@ schema:
   - internal/graph/schema.graphqls
 
 exec:
-  filename: internal/graph/generated/generated.go
+  filename: internal/graph/generated/graphql.go
   package: generated
 
 model:
-  filename: internal/graph/model/generated/models.go
+  filename: internal/graph/generated/models.go
   package: generated
 
 resolver:
