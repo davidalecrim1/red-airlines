@@ -1,0 +1,15 @@
+.env
+.env.local
+.DS_Store
+*.log
+vendor/
+node_modules/
+dist/
+build/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.pytest_cache/
+__pycache__/
