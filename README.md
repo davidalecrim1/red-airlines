@@ -40,11 +40,21 @@ The application manages flight information with three fare types:
 ### Prerequisites
 - Go 1.21+
 - Node.js 18+
-- PostgreSQL 14+
+- Docker (for PostgreSQL)
 
 ### Development Setup
 
-See `docs/tasks.md` for the implementation roadmap.
+1. Start the backend server:
+```bash
+cd backend
+make run
+```
+
+2. Test the GraphQL API using Apollo Studio Sandbox:
+   - Visit: https://studio.apollographql.com/sandbox/explorer/
+   - Paste endpoint: `http://localhost:8080/query`
+
+See `docs/GRAPHQL.md` for detailed GraphQL development guide.
 
 ## Project Goals
 

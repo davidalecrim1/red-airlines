@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:17
@@ -17,14 +15,32 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - red-airlines-network
 
-  graphql-playground:
-    image: renebrandel/graphql-playground
-    container_name: red-airlines-playground
-    environment:
-      ENDPOINT: http://host.docker.internal:8080/query
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: red-airlines-backend
     ports:
-      - "4000:4000"
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - go_modules:/go/pkg/mod
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/red_airlines?sslmode=disable
+      PORT: 8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - red-airlines-network
 
 volumes:
   postgres_data:
+  go_modules:
+
+networks:
+  red-airlines-network:
+    driver: bridge

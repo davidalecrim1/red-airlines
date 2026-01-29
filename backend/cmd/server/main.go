@@ -13,6 +13,21 @@ import (
 	"github.com/davidalecrim/red-airlines/internal/graph/resolver"
 )
 
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	db, err := database.ConnectSQLX()
 	if err != nil {
@@ -30,7 +45,7 @@ func main() {
 		Resolvers: &resolver.Resolver{DB: db, Loaders: loaders},
 	}))
 
-	http.Handle("/query", dataloader.Middleware(loaders, srv))
+	http.Handle("/query", corsMiddleware(dataloader.Middleware(loaders, srv)))
 	http.Handle("/", playground.Handler("GraphQL", "/query"))
 
 	log.Println("Server: http://localhost:8080")

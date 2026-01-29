@@ -1,11 +1,7 @@
 # Red Airlines - Project Tasks
 
-## Phase 2: Backend Development
-- [ ] Test GraphQL API with GraphQL playground
-
 ## Phase 3: Frontend Development
 - [ ] Initialize React + TypeScript + Vite project
-- [ ] Setup GraphQL client (Apollo or urql)
 - [ ] Create Flight list component
 - [ ] Create Fare display component
 - [ ] Implement GraphQL queries from frontend

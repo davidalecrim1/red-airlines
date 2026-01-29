@@ -276,23 +276,21 @@ func (r *queryResolver) Flights(ctx, origin, destination, limit) ([]*model.Fligh
 ### Start the Server
 
 ```bash
-make postgres-up
-make postgres-migrate
-make seed
-make server
+cd backend
+make run
 ```
 
-Server runs at: http://localhost:8080
+Server runs at: http://localhost:8080/query
 
-### GraphQL Playground
+### Apollo Studio Sandbox
 
-Built-in playground: http://localhost:8080
+Use Apollo Studio Sandbox for testing queries:
+https://studio.apollographql.com/sandbox/explorer/
 
-Or external playground:
-```bash
-make playground-up
+Paste the endpoint URL:
 ```
-Access at: http://localhost:4000
+http://localhost:8080/query
+```
 
 ### Example Query
 
