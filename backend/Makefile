@@ -7,7 +7,7 @@ postgres-down:
 	@docker compose down
 
 postgres-migrate:
-	@go run cmd/migrate/main.go
+	@DATABASE_URL="host=localhost port=5432 user=postgres password=postgres dbname=red_airlines sslmode=disable" go run cmd/migrate/main.go
 
 postgres-shell:
 	@docker exec -it red-airlines-postgres psql -U postgres -d red_airlines
@@ -38,20 +38,22 @@ run:
 	done
 	@echo "Running migrations..."
 	@$(MAKE) postgres-migrate
-	@go run cmd/server/main.go
+	@echo "Starting backend container..."
+	@docker compose up -d backend
 
 install-tools:
 	@echo "Installing development tools..."
-	go install mvdan.cc/gofumpt@latest
-	go install golang.org/x/tools/cmd/goimports@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install github.com/josharian/impl/cmd/modernize@latest
+	@go install mvdan.cc/gofumpt@latest
+	@go install golang.org/x/tools/cmd/goimports@latest
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	@go install golang.org/x/tools/go/analysis/passes/modernize/cmd/modernize@latest
+	@go install github.com/air-verse/air@latest
 	@echo "Tools installed successfully"
 
 format:
 	@gofumpt -w .
 	@goimports -w -local github.com/davidalecrim/red-airlines .
-	@modernize -any=true -fix ./...
+	@modernize -fix ./...
 
 lint: format
 	@golangci-lint run --fix

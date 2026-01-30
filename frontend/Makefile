@@ -1,4 +1,4 @@
-.PHONY: install run build preview clean lint
+.PHONY: install dev build preview clean lint format codegen
 
 install:
 	npm install
@@ -17,3 +17,9 @@ clean:
 
 lint:
 	npm run lint
+
+format:
+	npm run format
+
+codegen:
+	npm run codegen

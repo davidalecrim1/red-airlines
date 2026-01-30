@@ -1,0 +1,43 @@
+query SearchFlights($origin: String, $destination: String, $limit: Int) {
+  flights(origin: $origin, destination: $destination, limit: $limit) {
+    id
+    flightNumber
+    origin
+    destination
+    departureTime
+    arrivalTime
+    aircraftType
+    availableSeats
+    status
+    fares {
+      id
+      fareClass
+      price
+      availableSeats
+    }
+  }
+}
+
+query GetFlightDetails($id: ID!) {
+  flight(id: $id) {
+    id
+    flightNumber
+    origin
+    destination
+    departureTime
+    arrivalTime
+    aircraftType
+    totalSeats
+    availableSeats
+    status
+    fares {
+      id
+      fareClass
+      price
+      baggageAllowance
+      isRefundable
+      isChangeable
+      availableSeats
+    }
+  }
+}

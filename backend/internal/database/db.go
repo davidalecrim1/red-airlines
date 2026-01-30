@@ -2,16 +2,23 @@ package database
 
 import (
 	"database/sql"
+	"os"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
-const connStr = "host=localhost port=5432 user=postgres password=postgres dbname=red_airlines sslmode=disable"
+func getConnStr() string {
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		panic("DATABASE_URL environment variable is not set")
+	}
+	return connStr
+}
 
 // ConnectSQL returns standard sql.DB for migrations
 func ConnectSQL() (*sql.DB, error) {
-	db, err := sql.Open("postgres", connStr)
+	db, err := sql.Open("postgres", getConnStr())
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +27,7 @@ func ConnectSQL() (*sql.DB, error) {
 
 // ConnectSQLX returns sqlx.DB for queries with struct scanning
 func ConnectSQLX() (*sqlx.DB, error) {
-	db, err := sqlx.Connect("postgres", connStr)
+	db, err := sqlx.Connect("postgres", getConnStr())
 	if err != nil {
 		return nil, err
 	}
