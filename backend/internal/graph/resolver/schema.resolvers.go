@@ -142,6 +142,26 @@ func (r *queryResolver) Bookings(ctx context.Context, passengerEmail *string, li
 	return bookings, nil
 }
 
+// Airports is the resolver for the airports field.
+func (r *queryResolver) Airports(ctx context.Context) ([]string, error) {
+	query := `
+		SELECT DISTINCT airport
+		FROM (
+			SELECT origin AS airport FROM flights
+			UNION
+			SELECT destination AS airport FROM flights
+		) AS all_airports
+		ORDER BY airport
+	`
+
+	var airports []string
+	if err := r.DB.SelectContext(ctx, &airports, query); err != nil {
+		return nil, err
+	}
+
+	return airports, nil
+}
+
 // Booking returns generated.BookingResolver implementation.
 func (r *Resolver) Booking() generated.BookingResolver { return &bookingResolver{r} }
 

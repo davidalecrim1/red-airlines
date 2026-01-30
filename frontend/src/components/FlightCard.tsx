@@ -1,4 +1,4 @@
-import { formatTime, formatDuration, formatPrice } from '../utils/formatters';
+import { formatTime, formatDate, formatDuration, formatPrice } from '../utils/formatters';
 
 interface Fare {
   id: string;
@@ -50,11 +50,13 @@ export function FlightCard({
           <div className="time">
             <span className="label">Departure</span>
             <span className="value">{formatTime(departureTime)}</span>
+            <span className="date">{formatDate(departureTime)}</span>
           </div>
           <div className="duration">{formatDuration(departureTime, arrivalTime)}</div>
           <div className="time">
             <span className="label">Arrival</span>
             <span className="value">{formatTime(arrivalTime)}</span>
+            <span className="date">{formatDate(arrivalTime)}</span>
           </div>
         </div>
         <div className="flight-details">

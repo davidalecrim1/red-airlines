@@ -47,6 +47,7 @@ type Query {
   flight(id: ID!): Flight
   booking(bookingReference: String!): Booking
   bookings(passengerEmail: String, limit: Int): [Booking!]!
+  airports: [String!]!
 }
 
 scalar Time

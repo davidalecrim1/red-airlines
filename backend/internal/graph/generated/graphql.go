@@ -95,6 +95,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Airports func(childComplexity int) int
 		Booking  func(childComplexity int, bookingReference string) int
 		Bookings func(childComplexity int, passengerEmail *string, limit *int) int
 		Flight   func(childComplexity int, id string) int
@@ -119,6 +120,7 @@ type QueryResolver interface {
 	Flight(ctx context.Context, id string) (*model.Flight, error)
 	Booking(ctx context.Context, bookingReference string) (*model.Booking, error)
 	Bookings(ctx context.Context, passengerEmail *string, limit *int) ([]*model.Booking, error)
+	Airports(ctx context.Context) ([]string, error)
 }
 
 type executableSchema struct {
@@ -353,6 +355,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Flight.TotalSeats(childComplexity), true
 
+	case "Query.airports":
+		if e.complexity.Query.Airports == nil {
+			break
+		}
+
+		return e.complexity.Query.Airports(childComplexity), true
 	case "Query.booking":
 		if e.complexity.Query.Booking == nil {
 			break
@@ -536,6 +544,7 @@ type Query {
   flight(id: ID!): Flight
   booking(bookingReference: String!): Booking
   bookings(passengerEmail: String, limit: Int): [Booking!]!
+  airports: [String!]!
 }
 
 scalar Time
@@ -2104,6 +2113,35 @@ func (ec *executionContext) fieldContext_Query_bookings(ctx context.Context, fie
 	if fc.Args, err = ec.field_Query_bookings_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_airports(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_airports,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Query().Airports(ctx)
+		},
+		nil,
+		ec.marshalNString2ᚕstringᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_airports(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -4228,6 +4266,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "airports":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_airports(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -4842,6 +4902,36 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v any) (time.Time, error) {

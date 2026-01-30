@@ -15,6 +15,10 @@ export function formatTime(date: string): string {
   return format(parseISO(date), 'h:mm a');
 }
 
+export function formatDate(date: string): string {
+  return format(parseISO(date), 'MMM d, yyyy');
+}
+
 export function formatDuration(departure: string, arrival: string): string {
   const minutes = differenceInMinutes(parseISO(arrival), parseISO(departure));
   const hours = Math.floor(minutes / 60);

@@ -41,3 +41,7 @@ query GetFlightDetails($id: ID!) {
     }
   }
 }
+
+query GetAirports {
+  airports
+}

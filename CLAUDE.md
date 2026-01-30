@@ -21,6 +21,18 @@
 - Keep components small and focused
 - Type all GraphQL queries and responses
 
+#### GraphQL Code Generation
+- GraphQL operations defined in `src/**/*.graphql` files
+- Run `npm run codegen` to generate TypeScript types from schema
+- Generates `src/generated/graphql.ts` with types and typed document nodes
+- Configuration in `codegen.yml` points to backend at `http://localhost:8080/query`
+
+#### urql Client
+- Client configured in `src/lib/urql.ts` with cacheExchange and fetchExchange
+- App wrapped with urql Provider in `src/App.tsx`
+- Use `useQuery` hook with typed documents from generated code
+- Use `pause` option to conditionally skip queries
+
 ### Database
 - Use migrations for schema changes
 - Write clear, readable SQL
