@@ -45,3 +45,64 @@ query GetFlightDetails($id: ID!) {
 query GetAirports {
   airports
 }
+
+query GetBookingByReference($bookingReference: String!) {
+  booking(bookingReference: $bookingReference) {
+    id
+    bookingReference
+    passengerName
+    passengerEmail
+    passengerPhone
+    seatNumber
+    totalPrice
+    bookingStatus
+    bookedAt
+    flight {
+      flightNumber
+      origin
+      destination
+      departureTime
+      arrivalTime
+      aircraftType
+      status
+    }
+    fare {
+      fareClass
+      price
+      baggageAllowance
+      isRefundable
+      isChangeable
+    }
+  }
+}
+
+mutation CreateBooking($input: CreateBookingInput!) {
+  createBooking(input: $input) {
+    id
+    bookingReference
+    passengerName
+    passengerEmail
+    passengerPhone
+    seatNumber
+    totalPrice
+    bookingStatus
+    bookedAt
+    flight {
+      id
+      flightNumber
+      origin
+      destination
+      departureTime
+      arrivalTime
+      aircraftType
+    }
+    fare {
+      id
+      fareClass
+      price
+      baggageAllowance
+      isRefundable
+      isChangeable
+    }
+  }
+}

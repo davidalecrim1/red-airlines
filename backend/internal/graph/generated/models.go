@@ -2,5 +2,17 @@
 
 package generated
 
+type CreateBookingInput struct {
+	FlightID       string  `json:"flightId"`
+	FareID         string  `json:"fareId"`
+	PassengerName  string  `json:"passengerName"`
+	PassengerEmail string  `json:"passengerEmail"`
+	PassengerPhone *string `json:"passengerPhone,omitempty"`
+	SeatNumber     *string `json:"seatNumber,omitempty"`
+}
+
+type Mutation struct {
+}
+
 type Query struct {
 }

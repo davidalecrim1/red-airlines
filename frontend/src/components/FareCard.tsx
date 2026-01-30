@@ -1,6 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import { formatPrice } from '../utils/formatters';
 
 interface FareCardProps {
+  flightId: string;
+  fareId: string;
   fareClass: string;
   price: number;
   baggageAllowance: number;
@@ -10,6 +13,8 @@ interface FareCardProps {
 }
 
 export function FareCard({
+  flightId,
+  fareId,
   fareClass,
   price,
   baggageAllowance,
@@ -17,6 +22,12 @@ export function FareCard({
   isChangeable,
   availableSeats,
 }: FareCardProps) {
+  const navigate = useNavigate();
+
+  const handleSelect = () => {
+    navigate(`/book/${flightId}/${fareId}`);
+  };
+
   return (
     <div className={`fare-card fare-card-${fareClass.toLowerCase()}`}>
       <div className="fare-card-header">
@@ -33,7 +44,9 @@ export function FareCard({
           <li>{availableSeats} seats available</li>
         </ul>
       </div>
-      <button className="btn btn-primary">Select</button>
+      <button className="btn btn-primary" onClick={handleSelect}>
+        Select
+      </button>
     </div>
   );
 }

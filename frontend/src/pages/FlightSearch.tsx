@@ -29,6 +29,14 @@ export function FlightSearch() {
       <h1>Search Flights</h1>
       <SearchForm onSearch={handleSearch} />
 
+      {!data && !fetching && !error && (
+        <div className="welcome-section">
+          <div className="airplane-icon">✈</div>
+          <h2>Find Your Perfect Flight</h2>
+          <p>Select your origin and destination to search for available flights</p>
+        </div>
+      )}
+
       {fetching && <Loading />}
 
       {error && (

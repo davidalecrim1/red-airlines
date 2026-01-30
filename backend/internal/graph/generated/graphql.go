@@ -43,6 +43,7 @@ type ResolverRoot interface {
 	Booking() BookingResolver
 	Fare() FareResolver
 	Flight() FlightResolver
+	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -94,6 +95,10 @@ type ComplexityRoot struct {
 		TotalSeats     func(childComplexity int) int
 	}
 
+	Mutation struct {
+		CreateBooking func(childComplexity int, input CreateBookingInput) int
+	}
+
 	Query struct {
 		Airports func(childComplexity int) int
 		Booking  func(childComplexity int, bookingReference string) int
@@ -115,6 +120,10 @@ type FlightResolver interface {
 	Fares(ctx context.Context, obj *model.Flight) ([]*model.Fare, error)
 	Bookings(ctx context.Context, obj *model.Flight) ([]*model.Booking, error)
 }
+type MutationResolver interface {
+	CreateBooking(ctx context.Context, input CreateBookingInput) (*model.Booking, error)
+}
+
 type QueryResolver interface {
 	Flights(ctx context.Context, origin *string, destination *string, limit *int) ([]*model.Flight, error)
 	Flight(ctx context.Context, id string) (*model.Flight, error)
@@ -355,6 +364,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Flight.TotalSeats(childComplexity), true
 
+	case "Mutation.createBooking":
+		if e.complexity.Mutation.CreateBooking == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createBooking_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateBooking(childComplexity, args["input"].(CreateBookingInput)), true
+
 	case "Query.airports":
 		if e.complexity.Query.Airports == nil {
 			break
@@ -413,7 +434,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputCreateBookingInput,
+	)
 	first := true
 
 	switch opCtx.Operation.Operation {
@@ -446,6 +469,21 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			}
 
 			return &response
+		}
+	case ast.Mutation:
+		return func(ctx context.Context) *graphql.Response {
+			if !first {
+				return nil
+			}
+			first = false
+			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
+			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
 		}
 
 	default:
@@ -547,6 +585,19 @@ type Query {
   airports: [String!]!
 }
 
+input CreateBookingInput {
+  flightId: ID!
+  fareId: ID!
+  passengerName: String!
+  passengerEmail: String!
+  passengerPhone: String
+  seatNumber: String
+}
+
+type Mutation {
+  createBooking(input: CreateBookingInput!): Booking!
+}
+
 scalar Time
 `, BuiltIn: false},
 }
@@ -555,6 +606,17 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_createBooking_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalNCreateBookingInput2githubᚗcomᚋdavidalecrimᚋredᚑairlinesᚋinternalᚋgraphᚋgeneratedᚐCreateBookingInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -1841,6 +1903,75 @@ func (ec *executionContext) fieldContext_Flight_bookings(_ context.Context, fiel
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Booking", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createBooking(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_createBooking,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().CreateBooking(ctx, fc.Args["input"].(CreateBookingInput))
+		},
+		nil,
+		ec.marshalNBooking2ᚖgithubᚗcomᚋdavidalecrimᚋredᚑairlinesᚋinternalᚋgraphᚋmodelᚐBooking,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createBooking(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Booking_id(ctx, field)
+			case "bookingReference":
+				return ec.fieldContext_Booking_bookingReference(ctx, field)
+			case "flightId":
+				return ec.fieldContext_Booking_flightId(ctx, field)
+			case "fareId":
+				return ec.fieldContext_Booking_fareId(ctx, field)
+			case "passengerName":
+				return ec.fieldContext_Booking_passengerName(ctx, field)
+			case "passengerEmail":
+				return ec.fieldContext_Booking_passengerEmail(ctx, field)
+			case "passengerPhone":
+				return ec.fieldContext_Booking_passengerPhone(ctx, field)
+			case "seatNumber":
+				return ec.fieldContext_Booking_seatNumber(ctx, field)
+			case "bookingStatus":
+				return ec.fieldContext_Booking_bookingStatus(ctx, field)
+			case "totalPrice":
+				return ec.fieldContext_Booking_totalPrice(ctx, field)
+			case "bookedAt":
+				return ec.fieldContext_Booking_bookedAt(ctx, field)
+			case "flight":
+				return ec.fieldContext_Booking_flight(ctx, field)
+			case "fare":
+				return ec.fieldContext_Booking_fare(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Booking", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createBooking_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -3700,6 +3831,68 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCreateBookingInput(ctx context.Context, obj any) (CreateBookingInput, error) {
+	var it CreateBookingInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"flightId", "fareId", "passengerName", "passengerEmail", "passengerPhone", "seatNumber"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "flightId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flightId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FlightID = data
+		case "fareId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fareId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FareID = data
+		case "passengerName":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("passengerName"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PassengerName = data
+		case "passengerEmail":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("passengerEmail"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PassengerEmail = data
+		case "passengerPhone":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("passengerPhone"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PassengerPhone = data
+		case "seatNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seatNumber"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeatNumber = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -4142,6 +4335,55 @@ func (ec *executionContext) _Flight(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mutationImplementors = []string{"Mutation"}
+
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Mutation",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
+			Object: field.Name,
+			Field:  field,
+		})
+
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "createBooking":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createBooking(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4654,6 +4896,10 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNBooking2githubᚗcomᚋdavidalecrimᚋredᚑairlinesᚋinternalᚋgraphᚋmodelᚐBooking(ctx context.Context, sel ast.SelectionSet, v model.Booking) graphql.Marshaler {
+	return ec._Booking(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNBooking2ᚕᚖgithubᚗcomᚋdavidalecrimᚋredᚑairlinesᚋinternalᚋgraphᚋmodelᚐBookingᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Booking) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -4722,6 +4968,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNCreateBookingInput2githubᚗcomᚋdavidalecrimᚋredᚑairlinesᚋinternalᚋgraphᚋgeneratedᚐCreateBookingInput(ctx context.Context, v any) (CreateBookingInput, error) {
+	res, err := ec.unmarshalInputCreateBookingInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNFare2githubᚗcomᚋdavidalecrimᚋredᚑairlinesᚋinternalᚋgraphᚋmodelᚐFare(ctx context.Context, sel ast.SelectionSet, v model.Fare) graphql.Marshaler {
@@ -4913,7 +5164,7 @@ func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
 		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
 		if err != nil {
-			
+			return nil, err
 		}
 	}
 	return res, nil

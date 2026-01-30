@@ -50,4 +50,16 @@ type Query {
   airports: [String!]!
 }
 
+input CreateBookingInput {
+  flightId: ID!
+  fareId: ID!
+  passengerName: String!
+  passengerEmail: String!
+  passengerPhone: String
+  seatNumber: String
+}
+
+  createBooking(input: CreateBookingInput!): Booking!
+}
+
 scalar Time

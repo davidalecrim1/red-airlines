@@ -105,6 +105,8 @@ export function FlightDetails() {
         {sortedFares.map((fare) => (
           <FareCard
             key={fare.id}
+            flightId={flight.id}
+            fareId={fare.id}
             fareClass={fare.fareClass}
             price={fare.price}
             baggageAllowance={fare.baggageAllowance}

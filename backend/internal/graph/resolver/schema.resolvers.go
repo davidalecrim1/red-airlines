@@ -7,6 +7,12 @@ package resolver
 
 import (
 	"context"
+	"crypto/rand"
+	"fmt"
+	"math/big"
+	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/davidalecrim/red-airlines/internal/graph/generated"
 	"github.com/davidalecrim/red-airlines/internal/graph/model"
@@ -64,6 +70,92 @@ func (r *flightResolver) Bookings(ctx context.Context, obj *model.Flight) ([]*mo
 		return nil, err
 	}
 	return result, nil
+}
+
+// CreateBooking is the resolver for the createBooking field.
+func (r *mutationResolver) CreateBooking(ctx context.Context, input generated.CreateBookingInput) (*model.Booking, error) {
+	tx, err := r.DB.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	// Validate flight exists
+	var flight model.Flight
+	if err := tx.GetContext(ctx, &flight, "SELECT * FROM flights WHERE id = $1", input.FlightID); err != nil {
+		return nil, fmt.Errorf("flight not found: %w", err)
+	}
+
+	// Validate fare exists and has available seats
+	var fare model.Fare
+	if err := tx.GetContext(ctx, &fare, "SELECT * FROM fares WHERE id = $1", input.FareID); err != nil {
+		return nil, fmt.Errorf("fare not found: %w", err)
+	}
+
+	if fare.AvailableSeats <= 0 {
+		return nil, fmt.Errorf("no available seats for this fare")
+	}
+
+	// Generate unique booking reference
+	bookingReference := generateBookingReference()
+
+	// Check uniqueness (very unlikely collision)
+	var exists bool
+	err = tx.GetContext(ctx, &exists, "SELECT EXISTS(SELECT 1 FROM bookings WHERE booking_reference = $1)", bookingReference)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check booking reference uniqueness: %w", err)
+	}
+	if exists {
+		bookingReference = generateBookingReference()
+	}
+
+	// Create booking
+	booking := &model.Booking{
+		ID:               generateUUID(),
+		BookingReference: bookingReference,
+		FlightID:         input.FlightID,
+		FareID:           input.FareID,
+		PassengerName:    input.PassengerName,
+		PassengerEmail:   input.PassengerEmail,
+		BookingStatus:    "confirmed",
+		TotalPrice:       fare.Price,
+		BookedAt:         time.Now(),
+	}
+
+	if input.PassengerPhone != nil {
+		booking.PassengerPhone = *input.PassengerPhone
+	}
+	if input.SeatNumber != nil {
+		booking.SeatNumber = *input.SeatNumber
+	}
+
+	query := `
+		INSERT INTO bookings (id, booking_reference, flight_id, fare_id, passenger_name, passenger_email,
+			passenger_phone, seat_number, booking_status, total_price, booked_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+	`
+	_, err = tx.ExecContext(ctx, query,
+		booking.ID, booking.BookingReference, booking.FlightID, booking.FareID,
+		booking.PassengerName, booking.PassengerEmail, booking.PassengerPhone,
+		booking.SeatNumber, booking.BookingStatus, booking.TotalPrice, booking.BookedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create booking: %w", err)
+	}
+
+	// Decrement available seats
+	_, err = tx.ExecContext(ctx, "UPDATE fares SET available_seats = available_seats - 1 WHERE id = $1", input.FareID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update available seats: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return booking, nil
 }
 
 // Flights is the resolver for the flights field.
@@ -171,12 +263,31 @@ func (r *Resolver) Fare() generated.FareResolver { return &fareResolver{r} }
 // Flight returns generated.FlightResolver implementation.
 func (r *Resolver) Flight() generated.FlightResolver { return &flightResolver{r} }
 
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type (
-	bookingResolver struct{ *Resolver }
-	fareResolver    struct{ *Resolver }
-	flightResolver  struct{ *Resolver }
-	queryResolver   struct{ *Resolver }
+	bookingResolver  struct{ *Resolver }
+	fareResolver     struct{ *Resolver }
+	flightResolver   struct{ *Resolver }
+	mutationResolver struct{ *Resolver }
+	queryResolver    struct{ *Resolver }
 )
+
+func generateUUID() string {
+	return uuid.New().String()
+}
+
+func generateBookingReference() string {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	const length = 7
+	result := make([]byte, length)
+	for i := range result {
+		num, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		result[i] = charset[num.Int64()]
+	}
+	return "RDA" + string(result)
+}

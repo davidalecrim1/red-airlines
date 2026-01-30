@@ -44,5 +44,8 @@
 3. Build frontend UI
 4. Test integration between layers
 
+## Tool Installation
+Any new tools installed globally (e.g., `go install`, `npm install -g`) should be added to the `make install-tools` command in the Makefile to ensure all developers have the same tooling.
+
 ## Comments
 Only add comments to explain business logic (WHY), not implementation details (HOW).
