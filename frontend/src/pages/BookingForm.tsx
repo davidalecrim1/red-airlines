@@ -187,74 +187,65 @@ export function BookingForm() {
         {submitError && <div className="error-message">{submitError}</div>}
 
         <form onSubmit={handleSubmit} className="booking-form">
+          <div className="form-group">
+            <label htmlFor="passengerName">
+              Full Name <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="passengerName"
+              value={formData.passengerName}
+              onChange={(e) => setFormData({ ...formData, passengerName: e.target.value })}
+              required
+              disabled={isSubmitting}
+            />
+            {formErrors.passengerName && (
+              <span className="error-message">{formErrors.passengerName}</span>
+            )}
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="passengerName">
-            Full Name <span className="required">*</span>
-          </label>
-          <input
-            type="text"
-            id="passengerName"
-            value={formData.passengerName}
-            onChange={(e) =>
-              setFormData({ ...formData, passengerName: e.target.value })
-            }
-            required
-            disabled={isSubmitting}
-          />
-          {formErrors.passengerName && (
-            <span className="error-message">{formErrors.passengerName}</span>
-          )}
-        </div>
+          <div className="form-group">
+            <label htmlFor="passengerEmail">
+              Email <span className="required">*</span>
+            </label>
+            <input
+              type="email"
+              id="passengerEmail"
+              value={formData.passengerEmail}
+              onChange={(e) => setFormData({ ...formData, passengerEmail: e.target.value })}
+              required
+              disabled={isSubmitting}
+            />
+            {formErrors.passengerEmail && (
+              <span className="error-message">{formErrors.passengerEmail}</span>
+            )}
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="passengerEmail">
-            Email <span className="required">*</span>
-          </label>
-          <input
-            type="email"
-            id="passengerEmail"
-            value={formData.passengerEmail}
-            onChange={(e) =>
-              setFormData({ ...formData, passengerEmail: e.target.value })
-            }
-            required
-            disabled={isSubmitting}
-          />
-          {formErrors.passengerEmail && (
-            <span className="error-message">{formErrors.passengerEmail}</span>
-          )}
-        </div>
+          <div className="form-group">
+            <label htmlFor="passengerPhone">Phone (Optional)</label>
+            <input
+              type="tel"
+              id="passengerPhone"
+              value={formData.passengerPhone}
+              onChange={(e) => setFormData({ ...formData, passengerPhone: e.target.value })}
+              disabled={isSubmitting}
+            />
+            {formErrors.passengerPhone && (
+              <span className="error-message">{formErrors.passengerPhone}</span>
+            )}
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="passengerPhone">Phone (Optional)</label>
-          <input
-            type="tel"
-            id="passengerPhone"
-            value={formData.passengerPhone}
-            onChange={(e) =>
-              setFormData({ ...formData, passengerPhone: e.target.value })
-            }
-            disabled={isSubmitting}
-          />
-          {formErrors.passengerPhone && (
-            <span className="error-message">{formErrors.passengerPhone}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="seatNumber">Seat Preference (Optional)</label>
-          <input
-            type="text"
-            id="seatNumber"
-            placeholder="e.g., 12A"
-            value={formData.seatNumber}
-            onChange={(e) =>
-              setFormData({ ...formData, seatNumber: e.target.value })
-            }
-            disabled={isSubmitting}
-          />
-        </div>
+          <div className="form-group">
+            <label htmlFor="seatNumber">Seat Preference (Optional)</label>
+            <input
+              type="text"
+              id="seatNumber"
+              placeholder="e.g., 12A"
+              value={formData.seatNumber}
+              onChange={(e) => setFormData({ ...formData, seatNumber: e.target.value })}
+              disabled={isSubmitting}
+            />
+          </div>
 
           <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
             {isSubmitting ? 'Processing...' : 'Confirm Booking'}

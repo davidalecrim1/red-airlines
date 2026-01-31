@@ -29,3 +29,18 @@ export function formatDuration(departure: string, arrival: string): string {
   }
   return `${hours}h ${mins}m`;
 }
+
+export function formatStatus(status: string): string {
+  const statusMap: Record<string, string> = {
+    SCHEDULED: 'Scheduled',
+    CONFIRMED: 'Confirmed',
+    CANCELLED: 'Cancelled',
+    CHECKED_IN: 'Checked In',
+    DELAYED: 'Delayed',
+    BOARDING: 'Boarding',
+    DEPARTED: 'Departed',
+    ARRIVED: 'Arrived',
+  };
+
+  return statusMap[status] || status;
+}

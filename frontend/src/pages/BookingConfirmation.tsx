@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from 'urql';
 import { Loading } from '../components/Loading';
-import { formatDateTime, formatPrice } from '../utils/formatters';
+import { formatDateTime, formatPrice, formatStatus } from '../utils/formatters';
 import { GetBookingByReferenceDocument } from '../generated/graphql';
 
 export function BookingConfirmation() {
@@ -142,9 +142,7 @@ export function BookingConfirmation() {
           <div className="info-row">
             <div className="info-item">
               <span className="label">Total Price</span>
-              <span className="value price-highlight">
-                {formatPrice(booking.totalPrice)}
-              </span>
+              <span className="value price-highlight">{formatPrice(booking.totalPrice)}</span>
             </div>
           </div>
         </div>
@@ -153,7 +151,7 @@ export function BookingConfirmation() {
           <div className="info-row">
             <div className="info-item">
               <span className="label">Booking Status</span>
-              <span className="value">{booking.bookingStatus}</span>
+              <span className="value">{formatStatus(booking.bookingStatus)}</span>
             </div>
             <div className="info-item">
               <span className="label">Booked On</span>

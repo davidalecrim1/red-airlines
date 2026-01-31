@@ -46,6 +46,36 @@ query GetAirports {
   airports
 }
 
+query GetFlightWithBookings($id: ID!) {
+  flight(id: $id) {
+    id
+    flightNumber
+    origin
+    destination
+    departureTime
+    arrivalTime
+    aircraftType
+    totalSeats
+    availableSeats
+    status
+    bookings {
+      id
+      bookingReference
+      passengerName
+      passengerEmail
+      passengerPhone
+      seatNumber
+      totalPrice
+      bookingStatus
+      bookedAt
+      fare {
+        fareClass
+        price
+      }
+    }
+  }
+}
+
 query GetBookingByReference($bookingReference: String!) {
   booking(bookingReference: $bookingReference) {
     id

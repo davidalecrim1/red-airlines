@@ -6,6 +6,7 @@ import { FlightSearch } from './pages/FlightSearch';
 import { FlightDetails } from './pages/FlightDetails';
 import { BookingForm } from './pages/BookingForm';
 import { BookingConfirmation } from './pages/BookingConfirmation';
+import { AdminBookings } from './pages/AdminBookings';
 import './App.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
             <Route path="flights/:flightId" element={<FlightDetails />} />
             <Route path="book/:flightId/:fareId" element={<BookingForm />} />
             <Route path="confirmation/:bookingReference" element={<BookingConfirmation />} />
+            <Route path="admin" element={<AdminBookings />} />
           </Route>
         </Routes>
       </BrowserRouter>

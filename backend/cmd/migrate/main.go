@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/davidalecrim/red-airlines/internal/database"
 )
@@ -21,16 +22,24 @@ func main() {
 
 	log.Println("Connected to database")
 
-	migrationFile := filepath.Join("migrations", "001_initial_schema.sql")
-	migrationSQL, err := os.ReadFile(migrationFile)
+	files, err := filepath.Glob("migrations/*.sql")
 	if err != nil {
-		log.Fatalf("Failed to read migration: %v", err)
+		log.Fatalf("Failed to read migrations directory: %v", err)
 	}
 
-	log.Println("Running migration...")
-	if _, err := db.Exec(string(migrationSQL)); err != nil {
-		log.Fatalf("Migration failed: %v", err)
+	sort.Strings(files)
+
+	for _, migrationFile := range files {
+		log.Printf("Running migration: %s", filepath.Base(migrationFile))
+		migrationSQL, err := os.ReadFile(migrationFile)
+		if err != nil {
+			log.Fatalf("Failed to read migration %s: %v", migrationFile, err)
+		}
+
+		if _, err := db.Exec(string(migrationSQL)); err != nil {
+			log.Fatalf("Migration %s failed: %v", migrationFile, err)
+		}
 	}
 
-	log.Println("Migration completed")
+	log.Println("All migrations completed")
 }

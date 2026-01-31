@@ -1,11 +1,11 @@
-.PHONY: dev backend frontend install stop help
+.PHONY: run dev backend frontend install stop help
 
-dev:
+run:
 	@echo "Starting Red Airlines..."
 	@cd backend && docker-compose up -d
 	@echo "Waiting for backend to be ready..."
 	@sleep 3
-	@cd frontend && make dev
+	@cd frontend && make run
 
 backend:
 	@cd backend && docker-compose up
@@ -24,6 +24,7 @@ stop:
 
 help:
 	@echo "Red Airlines Development:"
+	@echo "  make run       - Start backend (Docker) and frontend"
 	@echo "  make dev       - Start backend (Docker) and frontend"
 	@echo "  make backend   - Start only backend"
 	@echo "  make frontend  - Start only frontend"

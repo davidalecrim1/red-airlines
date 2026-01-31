@@ -1,4 +1,4 @@
-.PHONY: postgres-up postgres-down postgres-migrate postgres-shell postgres-reset seed generate server playground-up format lint install-tools run
+.PHONY: postgres-up postgres-down postgres-migrate postgres-shell postgres-reset seed generate server playground-up format lint install-tools run restart
 
 postgres-up:
 	@docker compose up -d postgres
@@ -30,6 +30,20 @@ playground-up:
 	@docker compose up -d graphql-playground
 
 run:
+	@echo "Starting services..."
+	@docker compose up -d postgres
+	@echo "Waiting for PostgreSQL to be ready..."
+	@until docker exec red-airlines-postgres pg_isready -U postgres > /dev/null 2>&1; do \
+		sleep 1; \
+	done
+	@echo "Running migrations..."
+	@$(MAKE) postgres-migrate
+	@echo "Starting backend container..."
+	@docker compose up -d backend
+
+restart:
+	@echo "Stopping services..."
+	@docker compose down
 	@echo "Starting services..."
 	@docker compose up -d postgres
 	@echo "Waiting for PostgreSQL to be ready..."
@@ -80,3 +94,4 @@ help:
 	@echo ""
 	@echo "Development commands:"
 	@echo "  make run              - Start all services (postgres, playground, server)"
+	@echo "  make restart          - Stop and restart all services"

@@ -8,6 +8,11 @@ export function Layout() {
           <Link to="/" className="logo">
             Red Airlines
           </Link>
+          <nav className="header-nav">
+            <Link to="/admin" className="btn btn-secondary btn-sm">
+              Admin
+            </Link>
+          </nav>
         </div>
       </header>
       <main>

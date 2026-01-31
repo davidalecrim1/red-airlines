@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from 'urql';
 import { FareCard } from '../components/FareCard';
 import { Loading } from '../components/Loading';
-import { formatDateTime } from '../utils/formatters';
+import { formatDateTime, formatStatus } from '../utils/formatters';
 import { GetFlightDetailsDocument } from '../generated/graphql';
 
 export function FlightDetails() {
@@ -95,7 +95,7 @@ export function FlightDetails() {
           </div>
           <div className="info-item">
             <span className="label">Status</span>
-            <span className="value">{flight.status}</span>
+            <span className="value">{formatStatus(flight.status)}</span>
           </div>
         </div>
       </div>

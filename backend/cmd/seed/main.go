@@ -123,7 +123,7 @@ func generateFlights(count int) []Flight {
 			AircraftType:   aircraftTypes[rand.Intn(len(aircraftTypes))],
 			TotalSeats:     totalSeats,
 			AvailableSeats: totalSeats,
-			Status:         "scheduled",
+			Status:         "SCHEDULED",
 			CreatedAt:      now,
 			UpdatedAt:      now,
 		})
@@ -226,8 +226,8 @@ func generateAndInsertBookings(db *sqlx.DB, flights []Flight, fares []Fare) {
 	}
 
 	bookingStatuses := []string{
-		"confirmed", "confirmed", "confirmed", "confirmed", "confirmed",
-		"confirmed", "confirmed", "confirmed", "checked_in", "cancelled",
+		"CONFIRMED", "CONFIRMED", "CONFIRMED", "CONFIRMED", "CONFIRMED",
+		"CONFIRMED", "CONFIRMED", "CONFIRMED", "CHECKED_IN", "CANCELLED",
 	}
 	now := time.Now()
 	bookingCount := 0
