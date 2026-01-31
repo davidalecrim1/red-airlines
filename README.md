@@ -4,7 +4,7 @@ A modern full-stack flight booking application built with production-grade techn
 
 ## Demo
 
-<video src="docs/demo-video.mp4" controls></video>
+[Watch the demo video](https://github.com/davidalecrim1/red-airlines/blob/master/docs/demo-video.mp4)
 
 ## System Architecture
 
